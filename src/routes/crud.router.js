@@ -14,4 +14,15 @@ crudRouter.post('/post', async (req, res) => {
     }
 });
 
+crudRouter.delete('/delete', async (req, res) => {
+    try {
+        const object = await CRUDObject.findOneAndDelete({_id: req.body.id});
+
+      
+        res.status(200).send(object);
+    } catch (e) {
+        res.status(404).send({ error: { status: 404, message: e.message } });
+    }
+});
+
 module.exports = crudRouter;
