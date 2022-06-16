@@ -14,6 +14,19 @@ crudRouter.post('/post', async (req, res) => {
     }
 });
 
+crudRouter.get('/get', async (req, res) => {
+    try {
+        const recentData = await CRUDObject.find()
+            .sort({ createdAt: 'desc' })
+            .skip(parseInt(req.body.skip))
+            .limit(50);
+
+        res.send(recentData);
+    } catch (e) {
+        res.status(400).send({ error: { status: 400, message: e.message } });
+    }
+});
+
 crudRouter.delete('/delete', async (req, res) => {
     try {
         const object = await CRUDObject.findOneAndDelete({ _id: req.body.id });
