@@ -4,6 +4,14 @@ const CRUDObject = require('../models/crud.model');
 const crudRouter = express.Router();
 
 crudRouter.post('/post', async (req, res) => {
+    // {
+    //     "data": {
+    //         "name": "saif hossain",
+    //         "roll": 15,
+    //         "age": 22
+    //     }
+    // }
+    console.log({...req.body});
     try {
         const object = new CRUDObject({ ...req.body });
 
