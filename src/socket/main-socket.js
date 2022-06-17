@@ -12,7 +12,7 @@ const createSocket = (server) => {
             socket,
         };
 
-        dbSockets(server);
+        dbSockets(socketServer);
     });
 };
 

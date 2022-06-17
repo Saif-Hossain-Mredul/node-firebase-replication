@@ -23,6 +23,9 @@ crudRouter.post('/post', async (req, res) => {
 });
 
 crudRouter.get('/get', async (req, res) => {
+    // {
+    //     "skip":1
+    // }
     try {
         const recentData = await CRUDObject.find()
             .sort({ createdAt: 'desc' })
@@ -36,6 +39,9 @@ crudRouter.get('/get', async (req, res) => {
 });
 
 crudRouter.delete('/delete', async (req, res) => {
+    // {
+    //     "id": "62a9ae014fb1d01ad3885e77"
+    // }
     try {
         const object = await CRUDObject.findOneAndDelete({ _id: req.body.id });
 
@@ -46,6 +52,13 @@ crudRouter.delete('/delete', async (req, res) => {
 });
 
 crudRouter.patch('/update', async (req, res) => {
+    // {
+    //     "id": "62a9adff4fb1d01ad3885e71",
+    //     "updates": {
+    //         "name": "Saif Mredul",
+    //         "age": 28
+    //     }
+    // }
     try {
         const filter = { _id: req.body.id };
         const updates = { ...req.body.updates };
