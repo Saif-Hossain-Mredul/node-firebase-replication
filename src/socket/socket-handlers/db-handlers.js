@@ -16,4 +16,29 @@ const postData = async (server, data) => {
     }
 };
 
-module.exports = { postData };
+// updates a document
+const updateData =  async (server, updatedData) => {
+    try {
+        const filter = { _id: updatedData.id };
+        const updates = { ...updatedData.updates };
+        const object = await CRUDObject.findOneAndUpdate(
+            filter,
+            { data: updates },
+            {
+                new: true,
+            }
+        );
+
+        if (!object) throw new Error('Error updating document');
+
+        const recentData = await fetchData();
+
+        server.io.emit('recent-data', recentData);
+    } catch (e) {
+        server.socket.emit('error', {
+            error: { status: 400, message: e.message },
+        });
+    }
+}
+
+module.exports = { postData, updateData };

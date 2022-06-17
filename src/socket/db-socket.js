@@ -6,29 +6,7 @@ const dbSockets = (server) => {
     server.socket.on('post-data', dbHandlers.postData(server, data));
 
     // on updating data
-    server.socket.on('update-data', async (server, updatedData) => {
-        try {
-            const filter = { _id: updatedData.id };
-            const updates = { ...updatedData.updates };
-            const object = await CRUDObject.findOneAndUpdate(
-                filter,
-                { data: updates },
-                {
-                    new: true,
-                }
-            );
-    
-            if (!object) throw new Error('Error updating document');
-    
-            const recentData = await fetchData();
-
-            server.io.emit('recent-data', recentData);
-        } catch (e) {
-            server.socket.emit('error', {
-                error: { status: 400, message: e.message },
-            });
-        }
-    });
+    server.socket.on('update-data', dbHandlers.updateData(server, updatedData));
 
     // on deleting data
     server.socket.on('delete-data', async (server, id) => {
