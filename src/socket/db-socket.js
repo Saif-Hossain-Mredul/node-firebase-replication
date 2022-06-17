@@ -1,5 +1,5 @@
 const CRUDObject = require('../models/crud.model');
-const dbHandlers = require('./socket-handlers/db-handlers')
+const dbHandlers = require('./socket-handlers/db-handlers');
 
 const dbSockets = (server) => {
     // on creating new document
@@ -9,21 +9,7 @@ const dbSockets = (server) => {
     server.socket.on('update-data', dbHandlers.updateData(server, updatedData));
 
     // on deleting data
-    server.socket.on('delete-data', async (server, id) => {
-        try {
-            const object = await CRUDObject.findOneAndDelete({ _id: id });
-
-            if (!object) throw new Error('Failed to delete data.');
-
-            const recentData = await fetchData();
-
-            server.io.emit('recent-data', recentData);
-        } catch (e) {
-            server.socket.emit('error', {
-                error: { status: 404, message: e.message },
-            });
-        }
-    });
+    server.socket.on('delete-data', dbHandlers.deleteData(server, id));
 
     // on get data
     server.socket.on('get-data', async (server, skip) => {

@@ -41,4 +41,20 @@ const updateData =  async (server, updatedData) => {
     }
 }
 
-module.exports = { postData, updateData };
+const deleteData = async (server, id) => {
+    try {
+        const object = await CRUDObject.findOneAndDelete({ _id: id });
+
+        if (!object) throw new Error('Failed to delete data.');
+
+        const recentData = await fetchData();
+
+        server.io.emit('recent-data', recentData);
+    } catch (e) {
+        server.socket.emit('error', {
+            error: { status: 404, message: e.message },
+        });
+    }
+}
+
+module.exports = { postData, updateData, deleteData };
