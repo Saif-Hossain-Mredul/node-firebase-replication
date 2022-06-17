@@ -1,4 +1,5 @@
 const CRUDObject = require('../../models/crud.model');
+const fetchData = require('../../utils/fetch-data.utils');
 
 // creates new document
 const postData = async (server, data) => {
@@ -17,7 +18,7 @@ const postData = async (server, data) => {
 };
 
 // updates a document
-const updateData =  async (server, updatedData) => {
+const updateData = async (server, updatedData) => {
     try {
         const filter = { _id: updatedData.id };
         const updates = { ...updatedData.updates };
@@ -39,8 +40,9 @@ const updateData =  async (server, updatedData) => {
             error: { status: 400, message: e.message },
         });
     }
-}
+};
 
+// deletes a document
 const deleteData = async (server, id) => {
     try {
         const object = await CRUDObject.findOneAndDelete({ _id: id });
@@ -55,6 +57,19 @@ const deleteData = async (server, id) => {
             error: { status: 404, message: e.message },
         });
     }
-}
+};
 
-module.exports = { postData, updateData, deleteData };
+// fetches document and sends it
+const getDocuments = async (server, skip) => {
+    try {
+        const recentData = await fetchData(skip);
+
+        server.io.emit('recent-data', recentData);
+    } catch (e) {
+        server.socket.emit('error', {
+            error: { status: 400, message: e.message },
+        });
+    }
+};
+
+module.exports = { postData, updateData, deleteData, getDocuments };
