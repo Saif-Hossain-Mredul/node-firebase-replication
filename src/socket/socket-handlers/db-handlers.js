@@ -2,7 +2,7 @@ const CRUDObject = require('../../models/crud.model');
 const fetchData = require('../../utils/fetch-data.utils');
 
 // creates new document
-const postData = async (server, data) => {
+const postDocument = async (server, data) => {
     try {
         const object = new CRUDObject({ ...data });
 
@@ -18,7 +18,7 @@ const postData = async (server, data) => {
 };
 
 // updates a document
-const updateData = async (server, updatedData) => {
+const updateDocument = async (server, updatedData) => {
     try {
         const filter = { _id: updatedData.id };
         const updates = { ...updatedData.updates };
@@ -43,7 +43,7 @@ const updateData = async (server, updatedData) => {
 };
 
 // deletes a document
-const deleteData = async (server, id) => {
+const deleteDocument = async (server, id) => {
     try {
         const object = await CRUDObject.findOneAndDelete({ _id: id });
 
@@ -72,4 +72,4 @@ const getDocuments = async (server, skip) => {
     }
 };
 
-module.exports = { postData, updateData, deleteData, getDocuments };
+module.exports = { postDocument, updateDocument, deleteDocument, getDocuments };
