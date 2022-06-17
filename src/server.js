@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3000;
 
 const authRouter = require('./routes/auth.router');
 const crudRouter = require('./routes/crud.router');
+const createSocket = require('./socket/main-socket');
 
 const express = require('express');
 const http = require('http');
@@ -14,6 +15,8 @@ const server = http.createServer(app);
 app.use(express.json());
 app.use(authRouter);
 app.use(crudRouter);
+
+createSocket(server);
 
 server.listen(PORT, () => {
     console.log('Server started on port ' + PORT);
