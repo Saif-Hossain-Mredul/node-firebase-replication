@@ -15,7 +15,33 @@ const dbSockets = (server) => {
             });
         }
     });
-    server.socket.on('update-data', (server, updatedData) => {});
+
+    // on updating data
+    server.socket.on('update-data', async (server, updatedData) => {
+        try {
+            const filter = { _id: updatedData.id };
+            const updates = { ...updatedData.updates };
+            const object = await CRUDObject.findOneAndUpdate(
+                filter,
+                { data: updates },
+                {
+                    new: true,
+                }
+            );
+    
+            if (!object) throw new Error('Error updating document');
+    
+            const recentData = await fetchData();
+
+            server.io.emit('recent-data', recentData);
+        } catch (e) {
+            server.socket.emit('error', {
+                error: { status: 400, message: e.message },
+            });
+        }
+    });
+
+    // on deleting data
     server.socket.on('delete-data', async (server, id) => {
         try {
             const object = await CRUDObject.findOneAndDelete({ _id: id });
@@ -40,7 +66,7 @@ const dbSockets = (server) => {
             server.io.emit('recent-data', recentData);
         } catch (e) {
             server.socket.emit('error', {
-                error: { status: 404, message: e.message },
+                error: { status: 400, message: e.message },
             });
         }
     });
@@ -56,7 +82,6 @@ const fetchData = async (skip) => {
         return recentData;
     } catch (e) {
         return e.message;
-        // res.status(400).send({ error: { status: 400, message: e.message } });
     }
 };
 
