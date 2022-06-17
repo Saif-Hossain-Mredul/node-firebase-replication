@@ -16,8 +16,34 @@ const dbSockets = (server) => {
         }
     });
     server.socket.on('update-data', (server, updatedData) => {});
-    server.socket.on('delete-data', (server, id) => {});
-    server.socket.on('get-data', (server, skip) => {});
+    server.socket.on('delete-data', async (server, id) => {
+        try {
+            const object = await CRUDObject.findOneAndDelete({ _id: id });
+
+            if (!object) throw new Error('Failed to delete data.');
+
+            const recentData = await fetchData();
+
+            server.io.emit('recent-data', recentData);
+        } catch (e) {
+            server.socket.emit('error', {
+                error: { status: 404, message: e.message },
+            });
+        }
+    });
+
+    // on get data
+    server.socket.on('get-data', async (server, skip) => {
+        try {
+            const recentData = await fetchData(skip);
+
+            server.io.emit('recent-data', recentData);
+        } catch (e) {
+            server.socket.emit('error', {
+                error: { status: 404, message: e.message },
+            });
+        }
+    });
 };
 
 const fetchData = async (skip) => {
