@@ -1,20 +1,9 @@
 const CRUDObject = require('../models/crud.model');
+const dbHandlers = require('./socket-handlers/db-handlers')
 
 const dbSockets = (server) => {
-    server.socket.on('post-data', async (server, data) => {
-        try {
-            const object = new CRUDObject({ ...data });
-
-            await object.save();
-            const recentData = await fetchData();
-
-            server.io.emit('recent-data', recentData);
-        } catch (e) {
-            server.socket.emit('error', {
-                error: { status: 409, message: e.message },
-            });
-        }
-    });
+    // on creating new document
+    server.socket.on('post-data', dbHandlers.postData(server, data));
 
     // on updating data
     server.socket.on('update-data', async (server, updatedData) => {
@@ -75,7 +64,7 @@ const dbSockets = (server) => {
 const fetchData = async (skip) => {
     try {
         const recentData = await CRUDObject.find()
-            .sort({ createdAt: 'desc' })
+            .sort({ updatedAt: 'desc' })
             .skip(parseInt(skip))
             .limit(50);
 
