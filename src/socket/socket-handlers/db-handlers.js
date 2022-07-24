@@ -1,5 +1,5 @@
 const CRUDObject = require('../../models/crud.model');
-const fetchData = require('../../utils/fetch-data.utils');
+const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
 
 // creates new document
 const postDocument = async (server, data) => {
@@ -7,7 +7,7 @@ const postDocument = async (server, data) => {
         const object = new CRUDObject({ ...data });
 
         await object.save();
-        const recentData = await fetchData();
+        const recentData = await fetchDataFromDatabase();
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
@@ -32,7 +32,7 @@ const updateDocument = async (server, updatedData) => {
 
         if (!object) throw new Error('Error updating document');
 
-        const recentData = await fetchData();
+        const recentData = await fetchDataFromDatabase();
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
@@ -49,7 +49,7 @@ const deleteDocument = async (server, id) => {
 
         if (!object) throw new Error('Failed to delete data.');
 
-        const recentData = await fetchData();
+        const recentData = await fetchDataFromDatabase();
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
@@ -62,7 +62,7 @@ const deleteDocument = async (server, id) => {
 // fetches document and sends it
 const getDocuments = async (server, skip) => {
     try {
-        const recentData = await fetchData(skip);
+        const recentData = await fetchDataFromDatabase(skip);
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
