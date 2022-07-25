@@ -4,12 +4,16 @@ const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
 // creates new document
 const postDocument = async (server, data) => {
     try {
-        const object = new CRUDObject({ ...data });
+        const dataObject = JSON.parse(data);
+        const object = new CRUDObject({ ...dataObject });
 
         await object.save();
         const recentData = await fetchDataFromDatabase();
 
-        server.io.emit('recent-data', recentData);
+        console.log(recentData.length);
+
+        server.socket.broadcast.emit('recent-data', recentData);
+        server.socket.emit('recent-data', recentData);
     } catch (e) {
         console.log(e.message);
 
@@ -22,8 +26,9 @@ const postDocument = async (server, data) => {
 // updates a document
 const updateDocument = async (server, updatedData) => {
     try {
-        const filter = { _id: updatedData.id };
-        const updates = { ...updatedData.updates };
+        const dataObject = JSON.parse(updatedData);
+        const filter = { _id: dataObject.id };
+        const updates = { ...dataObject.updates };
         const object = await CRUDObject.findOneAndUpdate(
             filter,
             { data: updates },
@@ -36,7 +41,8 @@ const updateDocument = async (server, updatedData) => {
 
         const recentData = await fetchDataFromDatabase();
 
-        server.io.emit('recent-data', recentData);
+        server.socket.broadcast.emit('recent-data', recentData);
+        server.socket.emit('recent-data', recentData);
     } catch (e) {
         console.log(e.message);
 
@@ -55,7 +61,8 @@ const deleteDocument = async (server, id) => {
 
         const recentData = await fetchDataFromDatabase();
 
-        server.io.emit('recent-data', recentData);
+        server.socket.broadcast.emit('recent-data', recentData);
+        server.socket.emit('recent-data', recentData);
     } catch (e) {
         console.log(e.message);
 
