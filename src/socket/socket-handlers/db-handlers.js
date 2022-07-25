@@ -11,6 +11,8 @@ const postDocument = async (server, data) => {
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
+        console.log(e.message);
+
         server.socket.emit('error', {
             error: { status: 409, message: e.message },
         });
@@ -36,6 +38,8 @@ const updateDocument = async (server, updatedData) => {
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
+        console.log(e.message);
+
         server.socket.emit('error', {
             error: { status: 400, message: e.message },
         });
@@ -53,6 +57,8 @@ const deleteDocument = async (server, id) => {
 
         server.io.emit('recent-data', recentData);
     } catch (e) {
+        console.log(e.message);
+
         server.socket.emit('error', {
             error: { status: 404, message: e.message },
         });
@@ -64,12 +70,19 @@ const getDocuments = async (server, skip) => {
     try {
         const recentData = await fetchDataFromDatabase(skip);
 
-        server.io.emit('recent-data', recentData);
+        server.socket.emit('recent-data', recentData);
     } catch (e) {
+        console.log(e.message);
+
         server.socket.emit('error', {
             error: { status: 400, message: e.message },
         });
     }
 };
 
-module.exports = { postDocument, updateDocument, deleteDocument, getDocuments };
+module.exports = {
+    postDocument,
+    updateDocument,
+    deleteDocument,
+    getDocuments,
+};

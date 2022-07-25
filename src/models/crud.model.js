@@ -10,9 +10,9 @@ const CRUDSchema = new mongoose.Schema(
 CRUDSchema.methods.toJSON = function () {
     const crud = this;
 
-    const crudObject = crud.toObject();
+    var crudObject = crud.toObject();
 
-    crudObject.id = crudObject._id;
+    crudObject = { id: crudObject._id, ...crudObject.data };
 
     delete crudObject.__v;
     delete crudObject._id;
