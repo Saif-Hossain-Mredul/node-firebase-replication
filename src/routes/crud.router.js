@@ -12,6 +12,7 @@ crudRouter.post('/post', async (req, res) => {
     //     }
     // }
     console.log({...req.body});
+    console.log({...req.headers});
     try {
         const object = new CRUDObject({ ...req.body });
 

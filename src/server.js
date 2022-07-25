@@ -24,6 +24,10 @@ app.use(crudRouter);
 
 createSocket(server);
 
-server.listen(PORT, () => {
+app.get('*', (req, res) => {
+    res.send('Invalid path.').status(404);
+})
+
+server.listen(PORT, '0.0.0.0', () => {
     console.log('Server started on port ' + PORT);
 });
