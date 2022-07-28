@@ -12,7 +12,7 @@ CRUDSchema.methods.toJSON = function () {
 
     var crudObject = crud.toObject();
 
-    crudObject = { id: crudObject._id, ...crudObject.data };
+    crudObject.id = crudObject._id;  
 
     delete crudObject.__v;
     delete crudObject._id;
