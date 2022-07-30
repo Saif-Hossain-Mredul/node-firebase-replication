@@ -3,7 +3,7 @@ const CRUDObject = require('../models/crud.model');
 const fetchData = async (skip) => {
     try {
         const recentData = await CRUDObject.find()
-            .sort({ updatedAt: 'desc' })
+            .sort({ updatedAt: 'asc' })
             .skip(parseInt(skip))
             .limit(50);
 
@@ -11,6 +11,6 @@ const fetchData = async (skip) => {
     } catch (e) {
         return e.message;
     }
-};
+}; 
 
 module.exports = fetchData;
