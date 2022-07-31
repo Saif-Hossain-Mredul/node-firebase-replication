@@ -67,11 +67,11 @@ const updateDocument = async (server, updatedData) => {
 };
 
 // deletes a document
-const deleteDocument = async (server, objectInformation) => {
+const deleteDocument = async (server, documentInformation) => {
     try {
         console.log('deleteDocuments triggered');
 
-        const informationObject = JSON.parse(objectInformation);
+        const informationObject = JSON.parse(documentInformation);
         const { id, collection } = informationObject;
 
         const object = await CRUDObject.findOneAndDelete({

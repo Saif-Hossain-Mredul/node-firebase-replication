@@ -1,5 +1,6 @@
 const CRUDObject = require('../models/crud.model');
 const dbHandlers = require('./socket-handlers/db-handlers');
+const connection = require('../db/mongoose-connection.db');
 
 const dbSockets = (server) => {
     // on creating new document
@@ -13,13 +14,13 @@ const dbSockets = (server) => {
     );
 
     // on deleting data
-    server.socket.on('delete-data', (id) =>
-        dbHandlers.deleteDocument(server, id)
+    server.socket.on('delete-data', (documentInformation) =>
+        dbHandlers.deleteDocument(server, documentInformation)
     );
 
     // on get data
-    server.socket.on('get-data', (skip) =>
-        dbHandlers.getDocuments(server, skip)
+    server.socket.on('get-data', (query) =>
+        dbHandlers.getDocuments(server, query)
     );
 };
 
