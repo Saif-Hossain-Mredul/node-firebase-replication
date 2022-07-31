@@ -5,23 +5,23 @@ const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
 const postDocument = async (server, data) => {
     try {
         console.log('getDocuments triggered');
-        const dataObject = JSON.parse(data);
+
+        const receivedObject = JSON.parse(data);
+        const collection = receivedObject.collection;
+        const dataObject = { data: receivedObject.data };
+
         const object = new CRUDObject({ ...dataObject });
-
         await object.save();
-        const recentData = await fetchDataFromDatabase();
-
-        console.log(recentData.length);
 
         // whenever a new data is added to the database it is sent to the client
         // not he whole data like before
         //
-        // here two methods have been used because flutter client can not get 
+        // here two methods have been used because flutter client can not get
         // event passed through io.emit()
         //
         // passes data to all client except sender
         server.socket.broadcast.emit('new-object', object);
-        
+
         // passes data to sender only
         server.socket.emit('new-object', object);
     } catch (e) {
@@ -29,7 +29,7 @@ const postDocument = async (server, data) => {
 
         server.socket.emit('error', {
             error: { status: 409, message: e.message },
-        }); 
+        });
     }
 };
 
@@ -37,9 +37,13 @@ const postDocument = async (server, data) => {
 const updateDocument = async (server, updatedData) => {
     try {
         console.log('updateDocuments triggered');
+
         const dataObject = JSON.parse(updatedData);
+
         const filter = { _id: dataObject.id };
         const updates = { ...dataObject.updates };
+        const collection = dataObject.collection;
+
         const object = await CRUDObject.findOneAndUpdate(
             filter,
             { data: updates },
@@ -63,10 +67,16 @@ const updateDocument = async (server, updatedData) => {
 };
 
 // deletes a document
-const deleteDocument = async (server, id) => {
+const deleteDocument = async (server, objectInformation) => {
     try {
         console.log('deleteDocuments triggered');
-        const object = await CRUDObject.findOneAndDelete({ _id: id });
+
+        const informationObject = JSON.parse(objectInformation);
+        const { id, collection } = informationObject;
+
+        const object = await CRUDObject.findOneAndDelete({
+            _id: id,
+        });
 
         if (!object) throw new Error('Failed to delete data.');
 
@@ -76,17 +86,21 @@ const deleteDocument = async (server, id) => {
         server.socket.emit('deleted-object', id);
     } catch (e) {
         console.log(e.message);
- 
-        server.socket.emit('error', { 
+
+        server.socket.emit('error', {
             error: { status: 404, message: e.message },
         });
     }
 };
 
 // fetches document and sends it
-const getDocuments = async (server, skip) => {
+const getDocuments = async (server, query) => {
     try {
         console.log('getDocuments triggered');
+
+        const queryObject = JSON.parse(query);
+        const { skip, collection } = queryObject;
+
         const recentData = await fetchDataFromDatabase(skip);
 
         server.socket.emit('recent-data', recentData);
