@@ -1,6 +1,4 @@
-const CRUDObject = require('../models/crud.model');
 const dbHandlers = require('./socket-handlers/db-handlers');
-const connection = require('../db/mongoose-connection.db');
 
 const dbSockets = (server) => {
     // on creating new document
