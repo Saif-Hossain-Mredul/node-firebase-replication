@@ -1,11 +1,10 @@
 const CRUDObject = require('../../models/crud.model');
 const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
-// const connection = require('../../db/mongoose-connection.db');
 
 // creates new document
 const postDocument = async (server, data) => {
     try {
-        console.log('getDocuments triggered');
+        console.log('postDocuments triggered');
 
         const receivedObject = JSON.parse(data);
         const collection = receivedObject.collection;
@@ -21,7 +20,7 @@ const postDocument = async (server, data) => {
         // event passed through io.emit()
         //
         // passes data to all client except sender
-        server.socket.broadcast.emit('new-object', object);
+        server.socket.broadcast.to(collection).emit('new-object', object);
 
         // passes data to sender only
         server.socket.emit('new-object', object);
@@ -56,7 +55,7 @@ const updateDocument = async (server, updatedData) => {
         if (!object) throw new Error('Error updating document');
 
         // Upon updating the data, server sends only the data
-        server.socket.broadcast.emit('updated-object', object);
+        server.socket.broadcast.to(collection).emit('updated-object', object);
         server.socket.emit('updated-object', object);
     } catch (e) {
         console.log(e.message);
@@ -83,7 +82,7 @@ const deleteDocument = async (server, documentInformation) => {
 
         // Upon deleting server sends only the id of the deleted document, then
         // the document is removed from the offline client too
-        server.socket.broadcast.emit('deleted-object', id);
+        server.socket.broadcast.to(collection).emit('deleted-object', id);
         server.socket.emit('deleted-object', id);
     } catch (e) {
         console.log(e.message);
