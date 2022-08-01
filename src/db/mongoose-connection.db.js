@@ -4,29 +4,31 @@ const connectionURL = process.env.MONGODB_URL;
 
 getConnection = async () => {
     try {
-        const connection = await mongoose.connect(connectionURL, {
+        await mongoose.connect(connectionURL, {
             useNewUrlParser: true,
         });
         console.log('Connection to DB Successful');
 
-        return connection;
+        const mongooseConnection = await waitForConnection(mongoose.connection);
+
+        const collections = await mongooseConnection.db
+            .listCollections()
+            .toArray();
+        console.log(collections);
+
+        return mongooseConnection;
     } catch (err) {
         console.log(err.message);
     }
 };
 
-const connection = getConnection();
-
-mongoose.connection.on('open', function (ref) {
-    console.log('Connected to mongo server.');
-
-    mongoose.connection.db.listCollections().toArray(function (err, names) {
-        console.log(names);
+const waitForConnection = (connection) => {
+    return new Promise((resolve, reject) => {
+        connection.on('open', resolve(mongoose.connection));
+        connection.on('error', reject('Error connection to server'));
     });
+};
 
-    // mongoose.connection.db.createCollection('one').then((value) => {
-    //     console.log(value);
-    // });
-});
+const connection = getConnection();
 
 module.exports = connection;
