@@ -21,12 +21,7 @@ const postDocument = async (server, data) => {
             .collection('crudobjects')
             .insertOne(dataObject);
 
-        // await mongooseConnection.close();
-
         console.log(object);
-
-        // const object = new CRUDObject({ ...dataObject });
-        // await object.save();
 
         // whenever a new data is added to the database it is sent to the client
         // not he whole data like before
@@ -60,19 +55,28 @@ const updateDocument = async (server, updatedData) => {
 
         const dataObject = JSON.parse(updatedData);
 
-        const filter = { _id: dataObject.id };
+        const filter = { _id: ObjectId(dataObject.id) };
         const updates = { ...dataObject.updates };
         const collection = dataObject.collection;
 
-        const object = await CRUDObject.findOneAndUpdate(
-            filter,
-            { data: updates },
-            {
-                new: true,
-            }
-        );
+        const mongooseConnection = await waitForConnection(mongoose.connection);
 
-        if (!object) throw new Error('Error updating document');
+        const updatedObject = await mongooseConnection.db
+            .collection('crudobjects')
+            .findOneAndUpdate(
+                filter,
+                { $set: { data: updates } },
+                {
+                    returnDocument: 'after',
+                }
+            );
+
+        if (!updatedObject.value) throw new Error('Error updating document');
+
+        const object = {
+            id: updatedObject.value._id,
+            data: updatedObject.value.data,
+        };
 
         // Upon updating the data, server sends only the data
         server.socket.broadcast.to(collection).emit('updated-object', object);
