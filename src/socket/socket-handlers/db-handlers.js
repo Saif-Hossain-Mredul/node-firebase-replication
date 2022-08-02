@@ -2,6 +2,7 @@ const CRUDObject = require('../../models/crud.model');
 const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
 const mongoose = require('mongoose');
 const waitForConnection = require('../../db/mongodb-connection.db');
+const { ObjectId } = require('mongodb');
 
 // creates new document
 const postDocument = async (server, data) => {
@@ -90,14 +91,18 @@ const deleteDocument = async (server, documentInformation) => {
     try {
         console.log('deleteDocuments triggered');
 
+        const mongooseConnection = await waitForConnection(mongoose.connection);
+
         const informationObject = JSON.parse(documentInformation);
         const { id, collection } = informationObject;
 
-        const object = await CRUDObject.findOneAndDelete({
-            _id: id,
-        });
+        const object = await mongooseConnection.db
+            .collection('crudobjects')
+            .findOneAndDelete({
+                _id: ObjectId(id),
+            });
 
-        if (!object) throw new Error('Failed to delete data.');
+        if (!object.value) throw new Error('Failed to delete data.');
 
         // Upon deleting server sends only the id of the deleted document, then
         // the document is removed from the offline client too
