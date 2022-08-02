@@ -20,8 +20,6 @@ const postDocument = async (server, data) => {
             .collection('crudobjects')
             .insertOne(dataObject);
 
-        console.log(object);
-
         // whenever a new data is added to the database it is sent to the client
         // not he whole data like before
         //

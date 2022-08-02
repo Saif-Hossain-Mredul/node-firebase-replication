@@ -4,7 +4,6 @@ const PORT = process.env.PORT || 3000;
 
 const cors = require('cors');
 const authRouter = require('./routes/auth.router');
-const crudRouter = require('./routes/crud.router');
 const createSocket = require('./socket/main-socket');
 
 const express = require('express');
@@ -20,7 +19,6 @@ app.use(
 );
 app.use(express.json());
 app.use(authRouter);
-app.use(crudRouter);
 
 createSocket(server);
 
