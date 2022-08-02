@@ -1,17 +1,31 @@
 const CRUDObject = require('../../models/crud.model');
 const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
+const mongoose = require('mongoose');
+const waitForConnection = require('../../db/mongodb-connection.db');
 
 // creates new document
 const postDocument = async (server, data) => {
     try {
         console.log('postDocuments triggered');
 
+        const mongooseConnection = await waitForConnection(mongoose.connection);
+
         const receivedObject = JSON.parse(data);
         const collection = receivedObject.collection;
         const dataObject = { data: receivedObject.data };
+        dataObject.createdAt = new Date();
+        dataObject.updatedAt = new Date();
 
-        const object = new CRUDObject({ ...dataObject });
-        await object.save();
+        const object = await mongooseConnection.db
+            .collection('crudobjects')
+            .insertOne(dataObject);
+
+        // await mongooseConnection.close();
+
+        console.log(object);
+
+        // const object = new CRUDObject({ ...dataObject });
+        // await object.save();
 
         // whenever a new data is added to the database it is sent to the client
         // not he whole data like before
@@ -20,10 +34,15 @@ const postDocument = async (server, data) => {
         // event passed through io.emit()
         //
         // passes data to all client except sender
-        server.socket.broadcast.to(collection).emit('new-object', object);
+        server.socket.broadcast
+            .to(collection)
+            .emit('new-object', { id: object.insertedId, ...dataObject });
 
         // passes data to sender only
-        server.socket.emit('new-object', object);
+        server.socket.emit('new-object', {
+            id: object.insertedId,
+            ...dataObject,
+        });
     } catch (e) {
         console.log(e.message);
 
