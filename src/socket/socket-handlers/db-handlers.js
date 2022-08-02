@@ -1,7 +1,6 @@
-const CRUDObject = require('../../models/crud.model');
-const fetchDataFromDatabase = require('../../utils/fetch-data.utils');
 const mongoose = require('mongoose');
 const waitForConnection = require('../../db/mongodb-connection.db');
+const modifySearchResult = require('../../utils/modify-search-result');
 const { ObjectId } = require('mongodb');
 
 // creates new document
@@ -129,7 +128,16 @@ const getDocuments = async (server, query) => {
         const queryObject = JSON.parse(query);
         const { skip, collection } = queryObject;
 
-        const recentData = await fetchDataFromDatabase(skip);
+        const mongooseConnection = await waitForConnection(mongoose.connection);
+        let recentData = await mongooseConnection.db
+            .collection('crudobjects')
+            .find()
+            .skip(skip)
+            .sort({ updatedAt: 1 })
+            .limit(50)
+            .toArray();
+
+        recentData = modifySearchResult(recentData);
 
         server.socket.emit('recent-data', recentData);
     } catch (e) {
