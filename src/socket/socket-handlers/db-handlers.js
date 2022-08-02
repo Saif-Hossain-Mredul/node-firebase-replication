@@ -17,7 +17,7 @@ const postDocument = async (server, data) => {
         dataObject.updatedAt = new Date();
 
         const object = await mongooseConnection.db
-            .collection('crudobjects')
+            .collection(collection)
             .insertOne(dataObject);
 
         // whenever a new data is added to the database it is sent to the client
@@ -59,7 +59,7 @@ const updateDocument = async (server, updatedData) => {
         const mongooseConnection = await waitForConnection(mongoose.connection);
 
         const updatedObject = await mongooseConnection.db
-            .collection('crudobjects')
+            .collection(collection)
             .findOneAndUpdate(
                 filter,
                 { $set: { data: updates } },
@@ -98,7 +98,7 @@ const deleteDocument = async (server, documentInformation) => {
         const { id, collection } = informationObject;
 
         const object = await mongooseConnection.db
-            .collection('crudobjects')
+            .collection(collection)
             .findOneAndDelete({
                 _id: ObjectId(id),
             });
@@ -128,7 +128,7 @@ const getDocuments = async (server, query) => {
 
         const mongooseConnection = await waitForConnection(mongoose.connection);
         let recentData = await mongooseConnection.db
-            .collection('crudobjects')
+            .collection(collection)
             .find()
             .skip(skip)
             .sort({ updatedAt: 1 })
