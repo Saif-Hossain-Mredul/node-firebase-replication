@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const waitForConnection = require('../../db/mongodb-connection.db');
 const modifySearchResult = require('../../utils/modify-search-result');
 const { ObjectId } = require('mongodb');
+const OutgoingEvents = require('../../utils/events/outgoing-events');
 
 // creates new document
 const postDocument = async (server, data) => {
@@ -29,17 +30,20 @@ const postDocument = async (server, data) => {
         // passes data to all client except sender
         server.socket.broadcast
             .to(collection)
-            .emit('new-object', { id: object.insertedId, ...dataObject });
+            .emit(OutgoingEvents.NEW_OBJECT, {
+                id: object.insertedId,
+                ...dataObject,
+            });
 
         // passes data to sender only
-        server.socket.emit('new-object', {
+        server.socket.emit(OutgoingEvents.NEW_OBJECT, {
             id: object.insertedId,
             ...dataObject,
         });
     } catch (e) {
         console.log(e.message);
 
-        server.socket.emit('error', {
+        server.socket.emit(OutgoingEvents.ERROR, {
             error: { status: 409, message: e.message },
         });
     }
@@ -76,12 +80,14 @@ const updateDocument = async (server, updatedData) => {
         };
 
         // Upon updating the data, server sends only the data
-        server.socket.broadcast.to(collection).emit('updated-object', object);
-        server.socket.emit('updated-object', object);
+        server.socket.broadcast
+            .to(collection)
+            .emit(OutgoingEvents.UPDATED_OBJECT, object);
+        server.socket.emit(OutgoingEvents.UPDATED_OBJECT, object);
     } catch (e) {
         console.log(e.message);
 
-        server.socket.emit('error', {
+        server.socket.emit(OutgoingEvents.ERROR, {
             error: { status: 400, message: e.message },
         });
     }
@@ -107,12 +113,14 @@ const deleteDocument = async (server, documentInformation) => {
 
         // Upon deleting server sends only the id of the deleted document, then
         // the document is removed from the offline client too
-        server.socket.broadcast.to(collection).emit('deleted-object', id);
-        server.socket.emit('deleted-object', id);
+        server.socket.broadcast
+            .to(collection)
+            .emit(OutgoingEvents.DELETED_OBJECT, id);
+        server.socket.emit(OutgoingEvents.DELETED_OBJECT, id);
     } catch (e) {
         console.log(e.message);
 
-        server.socket.emit('error', {
+        server.socket.emit(OutgoingEvents.ERROR, {
             error: { status: 404, message: e.message },
         });
     }
@@ -137,11 +145,11 @@ const getDocuments = async (server, query) => {
 
         recentData = modifySearchResult(recentData);
 
-        server.socket.emit('recent-data', recentData);
+        server.socket.emit(OutgoingEvents.RECENT_DATA, recentData);
     } catch (e) {
         console.log(e.message);
 
-        server.socket.emit('error', {
+        server.socket.emit(OutgoingEvents.ERROR, {
             error: { status: 400, message: e.message },
         });
     }
