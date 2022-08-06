@@ -8,7 +8,18 @@ const OutgoingEvents = require('../../utils/events/outgoing-events');
 const postDocument = async (server, data) => {
     try {
         console.log('postDocuments triggered');
+        // Incoming data structure
+        // {
+        //     "data":{
+        //        "name":"name",
+        //        "roll":10,
+        //        "age":10
 
+        //        "extra field can be added in key value pair like above"
+        //     },
+        //     "collection":"data"
+        // }
+        
         const mongooseConnection = await waitForConnection(mongoose.connection);
 
         const receivedObject = JSON.parse(data);
@@ -21,19 +32,19 @@ const postDocument = async (server, data) => {
             .collection(collection)
             .insertOne(dataObject);
 
-        // whenever a new data is added to the database it is sent to the client
-        // not he whole data like before
-        //
-        // here two methods have been used because flutter client can not get
-        // event passed through io.emit()
-        //
-        // passes data to all client except sender
-        server.socket.broadcast
-            .to(collection)
-            .emit(OutgoingEvents.NEW_OBJECT, {
-                id: object.insertedId,
-                ...dataObject,
-            });
+        /**
+           whenever a new data is added to the database it is sent to the client
+           not he whole data like before
+
+            here two methods have been used because flutter client can not get
+            event passed through io.emit()
+
+            passes data to all client except sender
+         */
+        server.socket.broadcast.to(collection).emit(OutgoingEvents.NEW_OBJECT, {
+            id: object.insertedId,
+            ...dataObject,
+        });
 
         // passes data to sender only
         server.socket.emit(OutgoingEvents.NEW_OBJECT, {
@@ -53,6 +64,19 @@ const postDocument = async (server, data) => {
 const updateDocument = async (server, updatedData) => {
     try {
         console.log('updateDocuments triggered');
+
+        /**
+         * Incoming data structure
+         * Data must come in this pattern, otherwise error will be thrown
+         * {
+            "id":"62eeb352d6218a18b21c742f",
+            "updates":{
+               "name":"name",
+               "roll":0,
+               "age":0
+            },
+            "collection":"data"
+        }*/
 
         const dataObject = JSON.parse(updatedData);
 
@@ -97,6 +121,13 @@ const updateDocument = async (server, updatedData) => {
 const deleteDocument = async (server, documentInformation) => {
     try {
         console.log('deleteDocuments triggered');
+        /**
+         * Incoming data structure
+         * Data must come in this pattern, otherwise error will be thrown
+         * {
+            "id":"62eeb352d6218a18b21c742f",
+            "collection":"data"
+        }*/
 
         const mongooseConnection = await waitForConnection(mongoose.connection);
 
@@ -130,6 +161,14 @@ const deleteDocument = async (server, documentInformation) => {
 const getDocuments = async (server, query) => {
     try {
         console.log('getDocuments triggered');
+        /**
+         * Incoming data structure
+         * Data must come in this pattern, otherwise error will be thrown
+         * {
+            "skip":0,
+            "collection":"data"
+            }
+        */
 
         const queryObject = JSON.parse(query);
         const { skip, collection } = queryObject;
