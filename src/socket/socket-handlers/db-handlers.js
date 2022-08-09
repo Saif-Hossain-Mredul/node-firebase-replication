@@ -35,11 +35,6 @@ const postDocument = async (server, data) => {
         /**
            whenever a new data is added to the database it is sent to the client
            not he whole data like before
-
-            here two methods have been used because flutter client can not get
-            event passed through io.emit()
-
-            passes data to all client except sender
          */
 
         server.io
@@ -49,12 +44,6 @@ const postDocument = async (server, data) => {
                 id: object.insertedId,
                 ...dataObject,
             });
-
-        // passes data to sender only
-        // server.socket.emit(OutgoingEvents.NEW_OBJECT, {
-        //     id: object.insertedId,
-        //     ...dataObject,
-        // });
     } catch (e) {
         console.log(e.message);
 
@@ -107,11 +96,11 @@ const updateDocument = async (server, updatedData) => {
             data: updatedObject.value.data,
         };
 
-        // Upon updating the data, server sends only the data
-        server.socket.broadcast
-            .to(collection)
+        // Upon updating the data, server sends only the updated data
+        server.io
+            .of('/data')
+            .in(collection)
             .emit(OutgoingEvents.UPDATED_OBJECT, object);
-        server.socket.emit(OutgoingEvents.UPDATED_OBJECT, object);
     } catch (e) {
         console.log(e.message);
 
@@ -148,10 +137,10 @@ const deleteDocument = async (server, documentInformation) => {
 
         // Upon deleting server sends only the id of the deleted document, then
         // the document is removed from the offline client too
-        server.socket.broadcast
-            .to(collection)
+        server.io
+            .of('/data')
+            .in(collection)
             .emit(OutgoingEvents.DELETED_OBJECT, id);
-        server.socket.emit(OutgoingEvents.DELETED_OBJECT, id);
     } catch (e) {
         console.log(e.message);
 
