@@ -19,7 +19,7 @@ const postDocument = async (server, data) => {
         //     },
         //     "collection":"data"
         // }
-        
+
         const mongooseConnection = await waitForConnection(mongoose.connection);
 
         const receivedObject = JSON.parse(data);
@@ -41,16 +41,20 @@ const postDocument = async (server, data) => {
 
             passes data to all client except sender
          */
-        server.socket.broadcast.to(collection).emit(OutgoingEvents.NEW_OBJECT, {
-            id: object.insertedId,
-            ...dataObject,
-        });
+
+        server.io
+            .of('/data')
+            .in(collection)
+            .emit(OutgoingEvents.NEW_OBJECT, {
+                id: object.insertedId,
+                ...dataObject,
+            });
 
         // passes data to sender only
-        server.socket.emit(OutgoingEvents.NEW_OBJECT, {
-            id: object.insertedId,
-            ...dataObject,
-        });
+        // server.socket.emit(OutgoingEvents.NEW_OBJECT, {
+        //     id: object.insertedId,
+        //     ...dataObject,
+        // });
     } catch (e) {
         console.log(e.message);
 
